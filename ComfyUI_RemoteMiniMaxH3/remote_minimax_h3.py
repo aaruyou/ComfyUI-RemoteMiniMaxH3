@@ -83,6 +83,12 @@ async def remote_minimax_h3(request):
 
     try:
 
+        import torch
+
+        if hasattr(torch, "xpu") and torch.xpu.is_available():
+            from comfy_aimdo import control as coctrl
+            coctrl.set_dynamic_vram(True)
+
         # ----------------------------------------------------
         # Receive request
         # ----------------------------------------------------
