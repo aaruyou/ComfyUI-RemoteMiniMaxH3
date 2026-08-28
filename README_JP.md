@@ -220,6 +220,31 @@ H3 Conditioning ─┼─ Seed 3 ─┼─ UNET / Sampling
 
 ---
 
+## 対応GPU / DynamicVRAM
+
+本プロジェクトは現在、以下のGPU環境を対応対象としています。
+
+- **NVIDIA CUDA**
+- **Intel XPU**
+
+### Intel XPUを使用する場合
+
+Intel XPU環境では、別途 **ComfyUI-AIMDO-XPU** の導入が必須です。
+
+Remoteリクエストを受信したPC-BがXPU環境の場合、RemoteMiniMaxH3はXPUを検出すると、ComfyUI-AIMDO-XPUのDynamicVRAMを自動的に有効化します。
+
+そのため、XPU環境ではワークフロー上でAIMDO-XPUのノードを配置して、DynamicVRAMを手動でONにする必要はありません。
+
+### NVIDIA CUDAを使用する場合
+
+NVIDIA CUDA環境ではComfyUI-AIMDO-XPUは必要ありません。
+
+CUDA環境では通常のComfyUIのVRAM管理を使用します。
+
+> 現時点では、CUDA / XPU以外のデバイスはサポート対象外です。
+
+---
+
 ## 必要環境
 
 - ComfyUI

@@ -210,6 +210,25 @@ This is particularly useful when performing large numbers of seed variations.
 
 ---
 
+## Supported GPU Platforms
+
+This project currently supports the following GPU platforms:
+
+- NVIDIA CUDA
+- Intel XPU
+
+### Intel XPU requirement
+
+**Intel XPU requires [ComfyUI-AIMDO-XPU](https://github.com/Comfy-Org/ComfyUI-AIMDO-XPU) to be installed on PC-B.**
+
+When a Remote MiniMax H3 request is received on an XPU system, the Remote node automatically enables AIMDO-XPU DynamicVRAM before loading the CLIP and VAE. Therefore, you do **not** need to add an AIMDO-XPU node to the workflow or manually enable DynamicVRAM for Remote MiniMax H3 processing.
+
+On NVIDIA CUDA systems, AIMDO-XPU is not required and is not used.
+
+CUDA and XPU are currently the supported device platforms; other GPU/device backends are not supported at this time.
+
+---
+
 ## Requirements
 
 - ComfyUI
