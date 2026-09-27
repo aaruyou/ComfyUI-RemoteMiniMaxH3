@@ -4,7 +4,7 @@
 
 **MiniMax H3 の CLIP / Text Encoder 処理を別PCへ分離し、メインPCのVRAM使用量を削減するComfyUIカスタムノードです。**
 
-このカスタムノードは、LANで接続された2台のPCにMiniMax H3の処理を分散します。
+このカスタムノードは、LANで接続された2台のPCにMiniMax H3のImage to Video / Reference to Video処理を分散します。
 
 巨大なMiniMax H3 Text Encoderや関連モデルをUNETと同じGPUにロードする代わりに、必要な入力を別PCのComfyUIへ送り、そこでH3の処理を行います。
 
@@ -120,6 +120,27 @@ UNET / Sampler
 ```
 
 ---
+
+## Reference to Video
+
+Remote MiniMax H3は、**Image to Video**だけでなく**Reference to Video**にも対応しています。
+
+`Remote MiniMax H3 Reference to Video` ノードでは、Reference画像、Reference Videoファイル、Audioなどを、H3 Text EncoderやVAEの処理とともにリモートPC側で処理できます。
+
+Reference Videoファイルは、PC-A側でデコードせず、**ファイルデータのままPC-Bへ転送**します。
+
+PC-Bでは、受信したVideoを一時ファイルへ書き込み、ComfyUI内蔵のVideo実装を使用してデコードした後、MiniMax H3 Reference to Video処理へ渡します。
+
+対応するReference入力：
+
+- Reference画像
+- Reference Videoファイル
+- Reference Videoに対応するAudio
+- 単独のReference Audio
+
+巨大なH3モデルはPC-B側に残ったままで、PC間では処理に必要なデータと、処理結果であるCONDITIONING / LATENT等を転送します。
+
+Reference to Videoノードでも、上記の `Remote Port` と `Debug` を使用できます。
 
 ## ネットワーク通信量
 
@@ -280,10 +301,12 @@ ComfyUI/
 
 このノードには主に以下の入力があります。
 
-| Input | 説明 |
-|---|---|
-| `PC Name` | リモート側ComfyUIを実行しているPCのホスト名またはIPアドレス |
-| `CLIP File Name` | MiniMax H3で使用するCLIPモデル |
+| Input | 説明 | デフォルト |
+|---|---|---|
+| `PC Name` | リモート側ComfyUIを実行しているPCのホスト名またはIPアドレス | `Z840` |
+| `Remote Port` | リモート側ComfyUIのポート番号 | `8188` |
+| `Debug` | ComfyUIコンソールへ詳細なデバッグ情報を出力 | `OFF` |
+| `CLIP File Name` | MiniMax H3で使用するCLIPモデル | - |
 
 例：
 
@@ -291,11 +314,51 @@ ComfyUI/
 PC Name:
 Z840
 
+Remote Port:
+8188
+
+Debug:
+OFF
+
 CLIP:
 MiniMax\qwen3vl_32b_minimax_h3_int8_convrot.safetensors
 ```
 
 対応するVAEはリモート側のH3処理で扱われます。
+
+### Remote Port
+
+デフォルトのポート番号は `8188` です。
+
+同じリモートPC上で複数のComfyUIを動作させている場合、ポート番号を変更することで接続先のComfyUIインスタンスを選択できます。
+
+例えば、
+
+```text
+PC-B
+├── ComfyUI :8188
+└── ComfyUI :8189
+```
+
+のような構成であれば、ノードの `Remote Port` を変更するだけで、それぞれのComfyUIへ接続できます。
+
+### Debug
+
+`Debug` は**デフォルトOFF**です。
+
+ONにすると、ComfyUIのコンソールへ以下のような詳細情報を出力します。
+
+- 接続先PCと解決されたIPアドレス
+- リモートポート
+- Request / Responseのサイズ
+- リモート側でのモデルロード状況
+- H3処理の進行状況
+- Reference画像 / 動画 / Audioデータの情報
+- Reference Videoのデコード状況
+
+主にトラブルシューティングや、Remote処理が正しく行われているかを確認するための機能です。
+
+`Debug` がOFFでも、エラー発生時のtracebackは出力されます。
 
 ---
 

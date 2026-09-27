@@ -4,7 +4,7 @@
 
 **Run MiniMax H3's CLIP / Text Encoder processing on another PC to reduce VRAM usage on your main ComfyUI machine.**
 
-This custom node allows you to split MiniMax H3 processing across two PCs connected over a local network.
+This custom node allows you to split MiniMax H3 Image to Video and Reference to Video processing across two PCs connected over a local network.
 
 Instead of loading the large MiniMax H3 Text Encoder and related models on the same GPU as the UNET, this node sends the required inputs to a second ComfyUI instance, performs the H3 processing there, and returns the resulting data to the main PC.
 
@@ -114,6 +114,25 @@ UNET / Sampler
 ```
 
 ---
+
+## Reference to Video
+
+Remote MiniMax H3 supports both **Image to Video** and **Reference to Video** workflows.
+
+The `Remote MiniMax H3 Reference to Video` node allows reference images, reference video files, and audio inputs to be processed on the remote PC together with the H3 Text Encoder and VAE processing.
+
+Reference video files are transferred from PC-A to PC-B as file data **without decoding them on PC-A**. On PC-B, the transferred video is written to a temporary file and decoded using ComfyUI's built-in video implementation before being passed to the MiniMax H3 Reference to Video node.
+
+Supported reference inputs include:
+
+- Reference images
+- Reference video files
+- Audio associated with reference videos
+- Standalone reference audio
+
+The large H3 models remain on PC-B; only the data required for processing and the resulting conditioning / latent data are transferred between the PCs.
+
+The `Remote Port` and `Debug` settings are also available on the Reference to Video node.
 
 ## Network traffic
 
@@ -262,12 +281,14 @@ Restart ComfyUI after installation.
 
 ## Configuration
 
-The node requires two inputs:
+The node provides the following main inputs:
 
-| Input | Description |
-|---|---|
-| `PC Name` | Hostname or IP address of the PC running the remote ComfyUI |
-| `CLIP File Name` | CLIP model used by MiniMax H3 |
+| Input | Description | Default |
+|---|---|---|
+| `PC Name` | Hostname or IP address of the PC running the remote ComfyUI | `Z840` |
+| `Remote Port` | Port number of the remote ComfyUI instance | `8188` |
+| `Debug` | Enables detailed diagnostic output in the ComfyUI console | `OFF` |
+| `CLIP File Name` | CLIP model used by MiniMax H3 | - |
 
 Example:
 
@@ -275,11 +296,49 @@ Example:
 PC Name:
 Z840
 
+Remote Port:
+8188
+
+Debug:
+OFF
+
 CLIP:
 MiniMax\qwen3vl_32b_minimax_h3_int8_convrot.safetensors
 ```
 
 The corresponding VAE is handled by the remote H3 processing node.
+
+### Remote Port
+
+The default port is `8188`.
+
+The port can be changed when multiple ComfyUI instances are running on the same remote PC. For example:
+
+```text
+PC-B
+├── ComfyUI :8188
+└── ComfyUI :8189
+```
+
+This allows different ComfyUI instances on the same PC to be selected by changing only the `Remote Port` value in the node.
+
+### Debug
+
+`Debug` is **OFF by default**.
+
+When enabled, the node outputs additional diagnostic information to the ComfyUI console, such as:
+
+- Target PC and resolved IP address
+- Remote port
+- Request / response size
+- Remote model loading status
+- H3 processing status
+- Reference image / video / audio data information
+- Reference video decoding information
+
+This is intended mainly for troubleshooting and verifying the remote processing flow.
+
+Error tracebacks are still reported when an error occurs, even when `Debug` is `OFF`.
 
 ---
 
