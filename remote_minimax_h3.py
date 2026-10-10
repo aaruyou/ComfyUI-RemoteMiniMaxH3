@@ -266,29 +266,29 @@ async def _remote_minimax_h3_process(request, reference=False):
             _debug_print(debug, "Audio VAE loaded on PC-B.")
 
             result = MiniMaxH3ReferenceToVideo.execute(
-                clip,
-                vae,
-                audio_vae,
-                prompt,
-                width,
-                height,
-                length,
-                request_data.get("ref_image_size", "match"),
-                request_data.get("ref_images"),
-                request_data.get("ref_videos"),
-                request_data.get("ref_video_audios"),
-                request_data.get("ref_audios"),
+                clip=clip,
+                prompt=prompt,
+                width=width,
+                height=height,
+                length=length,
+                ref_image_size=request_data.get("ref_image_size", "match"),
+                vae=vae,
+                audio_vae=audio_vae,
+                ref_images=request_data.get("ref_images"),
+                ref_videos=request_data.get("ref_videos"),
+                ref_video_audios=request_data.get("ref_video_audios"),
+                ref_audios=request_data.get("ref_audios"),
             )
         else:
             result = MiniMaxH3ImageToVideo.execute(
-                clip,
-                vae,
-                prompt,
-                width,
-                height,
-                length,
-                request_data.get("first_frame"),
-                request_data.get("last_frame"),
+                clip=clip,
+                vae=vae,
+                prompt=prompt,
+                width=width,
+                height=height,
+                length=length,
+                first_frame=request_data.get("first_frame"),
+                last_frame=request_data.get("last_frame"),
             )
 
         conditioning = result[0]
